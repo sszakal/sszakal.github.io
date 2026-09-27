@@ -25,7 +25,7 @@ import { galleries } from '../../data/galleries';
 				galleries.map((g) => (
 					<a class="tile" href={`/gallery/${g.slug}/`}>
 						<span class="tile-index">{g.index}</span>
-						<img src={g.cover} alt={g.title} loading="lazy" />
+						<div class="tile-image" data-reveal={g.cover} data-alt={g.title} />
 						<span class="tile-title">{g.title}</span>
 					</a>
 				))
@@ -84,6 +84,11 @@ import { galleries } from '../../data/galleries';
 				text-decoration: none;
 				display: block;
 			}
+			.tile-image {
+				position: absolute;
+				inset: 0;
+				background: #0a0d12;
+			}
 			.tile img {
 				width: 100%;
 				height: 100%;
@@ -124,5 +129,10 @@ import { galleries } from '../../data/galleries';
 				}
 			}
 		</style>
+
+		<script>
+			import { setupTileReveal } from '../../scripts/tile-reveal';
+			setupTileReveal();
+		</script>
 	</body>
 </html>

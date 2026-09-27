@@ -41,9 +41,7 @@ const next = galleries[(idx + 1) % galleries.length];
 		<main class="grid">
 			{
 				gallery.photos.map((p) => (
-					<figure class="frame">
-						<img src={p.src} alt={p.alt} loading="lazy" />
-					</figure>
+					<figure class="frame" data-reveal={p.src} data-alt={p.alt} />
 				))
 			}
 		</main>
@@ -112,8 +110,11 @@ const next = galleries[(idx + 1) % galleries.length];
 				padding: 0 40px;
 			}
 			.frame {
+				position: relative;
 				margin: 0;
+				aspect-ratio: 4 / 5;
 				overflow: hidden;
+				background: #0a0d12;
 			}
 			.frame img {
 				display: block;
@@ -157,5 +158,10 @@ const next = galleries[(idx + 1) % galleries.length];
 				}
 			}
 		</style>
+
+		<script>
+			import { setupTileReveal } from '../../scripts/tile-reveal';
+			setupTileReveal();
+		</script>
 	</body>
 </html>

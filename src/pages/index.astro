@@ -4,6 +4,7 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 import { galleries } from '../data/galleries';
 
 const first = galleries[0];
+const albumsJson = JSON.stringify(galleries.map((g) => ({ slug: g.slug, title: g.title, cover: g.cover })));
 ---
 
 <!doctype html>
@@ -35,21 +36,7 @@ const first = galleries[0];
 		</div>
 
 		<main class="hero" id="hero">
-			<div class="hero-stack">
-				{
-					galleries.map((g, i) => (
-						<img
-							class="hero-image"
-							class:list={[{ active: i === 0 }]}
-							data-slug={g.slug}
-							src={g.cover}
-							alt={g.title}
-							loading={i === 0 ? 'eager' : 'lazy'}
-							fetchpriority={i === 0 ? 'high' : 'low'}
-						/>
-					))
-				}
-			</div>
+			<div class="hero-canvas" id="heroCanvas"></div>
 		</main>
 
 		<ol class="collections" id="collections">
@@ -83,6 +70,8 @@ const first = galleries[0];
 			</nav>
 			<a class="email" href="mailto:hello@x86.cc">HELLO@X86.CC</a>
 		</footer>
+
+		<script type="application/json" id="albums-data" set:html={albumsJson} />
 
 		<style>
 			:global(html, body) {
@@ -205,38 +194,14 @@ const first = galleries[0];
 				padding: 0;
 				overflow: hidden;
 			}
-			.hero-stack {
-				position: absolute;
-				inset: 0;
-				will-change: transform;
-			}
-			.hero-image {
+			.hero-canvas {
 				position: absolute;
 				inset: 0;
 				width: 100%;
 				height: 100%;
-				object-fit: cover;
-				opacity: 0;
-				filter: saturate(0.75) brightness(0.55) contrast(1.05);
-				transition: opacity 1.1s ease;
-				transform: scale(1.08);
 			}
-			.hero-image.active {
-				opacity: 1;
-				animation: kenburns 16s ease-in-out infinite alternate;
-			}
-			@keyframes kenburns {
-				from {
-					transform: scale(1.08) translate3d(0, 0, 0);
-				}
-				to {
-					transform: scale(1.16) translate3d(-1%, -1%, 0);
-				}
-			}
-			@media (prefers-reduced-motion: reduce) {
-				.hero-image.active {
-					animation: none;
-				}
+			.hero-canvas canvas {
+				display: block;
 			}
 
 			.collections {
@@ -331,9 +296,6 @@ const first = galleries[0];
 					position: relative;
 					height: 56vh;
 				}
-				.hero-stack {
-					position: absolute;
-				}
 				.meta-top-left,
 				.meta-top-right {
 					position: static;
@@ -378,46 +340,60 @@ const first = galleries[0];
 			}
 		</style>
 
-		<script define:vars={{ galleries: galleries.map((g) => ({ slug: g.slug, title: g.title })) }}>
-			const byTitle = Object.fromEntries(galleries.map((g) => [g.slug, g.title]));
+		<script>
+			import { ParticleField, isWebGLAvailable } from '../scripts/particle-field';
 
-			function setActive(slug) {
-				document.querySelectorAll('.hero-image').forEach((img) => {
-					img.classList.toggle('active', img.dataset.slug === slug);
-				});
-				document.querySelectorAll('.collections button').forEach((btn) => {
+			interface Album {
+				slug: string;
+				title: string;
+				cover: string;
+			}
+
+			const dataEl = document.getElementById('albums-data');
+			const albums: Album[] = dataEl ? JSON.parse(dataEl.textContent || '[]') : [];
+			const byTitle = Object.fromEntries(albums.map((a) => [a.slug, a.title]));
+			const bySlug = Object.fromEntries(albums.map((a) => [a.slug, a]));
+
+			const container = document.getElementById('heroCanvas');
+
+			function setUI(slug: string) {
+				document.querySelectorAll<HTMLButtonElement>('.collections button').forEach((btn) => {
 					btn.classList.toggle('active', btn.dataset.slug === slug);
 				});
-				const btn = document.getElementById('viewGalleryBtn');
+				const btn = document.getElementById('viewGalleryBtn') as HTMLAnchorElement | null;
 				const label = document.getElementById('viewGalleryLabel');
 				if (btn) btn.href = `/gallery/${slug}/`;
 				if (label) label.textContent = `View ${byTitle[slug] ?? slug}`;
 			}
 
-			document.querySelectorAll('.collections button').forEach((btn) => {
-				const slug = btn.dataset.slug;
-				btn.addEventListener('mouseenter', () => setActive(slug));
-				btn.addEventListener('focus', () => setActive(slug));
-				btn.addEventListener('click', () => setActive(slug));
-			});
+			async function init() {
+				if (!container || albums.length === 0) return;
 
-			// Subtle cursor parallax on the hero image stack.
-			const hero = document.getElementById('hero');
-			const stack = document.querySelector('.hero-stack');
-			if (hero && stack && matchMedia('(hover: hover) and (min-width: 861px)').matches) {
-				let raf = null;
-				hero.addEventListener('mousemove', (e) => {
-					const x = (e.clientX / window.innerWidth - 0.5) * 24;
-					const y = (e.clientY / window.innerHeight - 0.5) * 24;
-					if (raf) cancelAnimationFrame(raf);
-					raf = requestAnimationFrame(() => {
-						stack.style.transform = `translate3d(${-x}px, ${-y}px, 0)`;
-					});
-				});
-				hero.addEventListener('mouseleave', () => {
-					stack.style.transform = 'translate3d(0, 0, 0)';
+				if (!isWebGLAvailable()) {
+					container.innerHTML =
+						'<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#565b66;font-size:12px;letter-spacing:.1em;text-transform:uppercase;">WebGL unavailable</div>';
+					return;
+				}
+
+				const field = new ParticleField(container, { count: 9000, mode: 'loop', disperse: 3.4 });
+				await field.loadInitial(albums[0].cover);
+
+				let active = albums[0].slug;
+				document.querySelectorAll<HTMLButtonElement>('.collections button').forEach((el) => {
+					const slug = el.dataset.slug!;
+					const go = () => {
+						if (slug === active) return;
+						active = slug;
+						setUI(slug);
+						field.transitionTo(bySlug[slug].cover);
+					};
+					el.addEventListener('mouseenter', go);
+					el.addEventListener('focus', go);
+					el.addEventListener('click', go);
 				});
 			}
+
+			init();
 
 			// Decorative preloader counter.
 			const countEl = document.getElementById('preloaderCount');
