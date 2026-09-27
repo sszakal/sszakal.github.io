@@ -1,49 +1,464 @@
 ---
 import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
-import Header from '../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { galleries } from '../data/galleries';
+
+const first = galleries[0];
 ---
 
 <!doctype html>
 <html lang="en">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap"
+			rel="stylesheet"
+		/>
 	</head>
 	<body>
-		<Header />
-		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This template
-				serves as a lightweight, minimally-styled starting point for anyone looking to build a personal
-				website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to
-				<a href="https://docs.astro.build/">read the docs</a>
-				or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a>
-				by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
+		<div class="preloader" id="preloader" aria-hidden="true">
+			<span class="preloader-count" id="preloaderCount">0%</span>
+		</div>
+
+		<div class="glow"></div>
+
+		<header class="meta meta-top-left">
+			<span class="tag">G-01</span>
+			<p class="brand">STEFAN SZAKAL<br />PHOTOGRAPHER</p>
+		</header>
+
+		<div class="meta meta-top-right">
+			<a href="/gallery/">INDEX</a>
+			<span class="status">AVAILABLE FOR BOOKINGS</span>
+		</div>
+
+		<nav class="meta meta-nav" aria-label="Primary">
+			<a href="#collections">Galleries</a>
+			<a href="/about/">About</a>
+			<a href="/blog/">Blog</a>
+		</nav>
+
+		<main class="hero" id="hero">
+			<div class="hero-stack">
+				{
+					galleries.map((g, i) => (
+						<img
+							class="hero-image"
+							class:list={[{ active: i === 0 }]}
+							data-slug={g.slug}
+							src={g.cover}
+							alt={g.title}
+							loading={i === 0 ? 'eager' : 'lazy'}
+							fetchpriority={i === 0 ? 'high' : 'low'}
+						/>
+					))
+				}
+			</div>
 		</main>
-		<Footer />
+
+		<ol class="collections" id="collections">
+			{
+				galleries.map((g, i) => (
+					<li>
+						<button type="button" class:list={[{ active: i === 0 }]} data-slug={g.slug}>
+							<span class="collection-index">{g.index}</span>
+							{g.title}
+						</button>
+					</li>
+				))
+			}
+		</ol>
+
+		<div class="cta-wrap">
+			<a class="cta" id="viewGalleryBtn" href={`/gallery/${first.slug}/`}>
+				<span id="viewGalleryLabel">View {first.title}</span>
+				<span class="cta-arrow" aria-hidden="true">&rsaquo;</span>
+			</a>
+		</div>
+
+		<div class="meta meta-bottom-left">
+			<span class="loader-line" aria-hidden="true"></span>
+		</div>
+
+		<footer class="meta meta-bottom-right">
+			<nav class="social" aria-label="Social">
+				<a href="https://instagram.com/" target="_blank" rel="noreferrer">INSTAGRAM</a>
+				<a href="https://twitter.com/" target="_blank" rel="noreferrer">TWITTER</a>
+			</nav>
+			<a class="email" href="mailto:hello@x86.cc">HELLO@X86.CC</a>
+		</footer>
+
+		<style>
+			:global(html, body) {
+				height: 100%;
+			}
+			body {
+				margin: 0;
+				overflow: hidden;
+				background: #05070a;
+				color: #bcbcbc;
+				font-family: 'JetBrains Mono', 'JB Mono', Menlo, Monaco, 'Courier New', monospace;
+				position: relative;
+				height: 100vh;
+			}
+
+			.glow {
+				position: fixed;
+				inset: 0;
+				pointer-events: none;
+				background:
+					radial-gradient(ellipse 900px 700px at 88% 25%, rgba(140, 165, 200, 0.16), transparent 60%),
+					radial-gradient(ellipse 700px 500px at 10% 90%, rgba(60, 90, 140, 0.12), transparent 60%);
+				z-index: 1;
+			}
+
+			.preloader {
+				position: fixed;
+				inset: 0;
+				z-index: 50;
+				background: #05070a;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 13px;
+				letter-spacing: 0.15em;
+				color: #8a8f9a;
+				animation: fadeOut 400ms ease 900ms forwards;
+				pointer-events: none;
+			}
+			@keyframes fadeOut {
+				to {
+					opacity: 0;
+					visibility: hidden;
+				}
+			}
+
+			.meta {
+				position: fixed;
+				z-index: 5;
+				font-size: 11px;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+			}
+			.meta a {
+				color: inherit;
+				text-decoration: none;
+			}
+			.meta a:hover {
+				color: #fff;
+			}
+
+			.meta-top-left {
+				top: 40px;
+				left: 40px;
+				display: flex;
+				gap: 24px;
+				align-items: flex-start;
+			}
+			.tag {
+				color: #6b7280;
+			}
+			.brand {
+				margin: 0;
+				color: #e6e6e6;
+				line-height: 1.5;
+			}
+
+			.meta-top-right {
+				top: 40px;
+				right: 40px;
+				display: flex;
+				gap: 32px;
+				color: #8a8f9a;
+			}
+
+			.meta-nav {
+				top: 50%;
+				left: 40px;
+				transform: translateY(-50%);
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
+				font-size: 13px;
+				text-transform: none;
+				letter-spacing: 0.02em;
+			}
+			.meta-nav a:first-child {
+				color: #fff;
+			}
+			.meta-nav a:not(:first-child) {
+				color: #7a7f89;
+			}
+
+			.meta-bottom-left {
+				bottom: 44px;
+				left: 40px;
+			}
+			.loader-line {
+				display: inline-block;
+				width: 100px;
+				height: 1px;
+				background: repeating-linear-gradient(90deg, #4a4f59 0 6px, transparent 6px 10px);
+			}
+
+			.meta-bottom-right {
+				bottom: 40px;
+				right: 40px;
+				display: flex;
+				gap: 48px;
+				align-items: baseline;
+				color: #7a7f89;
+			}
+			.social {
+				display: flex;
+				gap: 16px;
+			}
+			.email {
+				color: #7a7f89;
+			}
+
+			.hero {
+				position: absolute;
+				inset: 0;
+				z-index: 0;
+				width: auto;
+				max-width: none;
+				margin: 0;
+				padding: 0;
+				overflow: hidden;
+			}
+			.hero-stack {
+				position: absolute;
+				inset: 0;
+				will-change: transform;
+			}
+			.hero-image {
+				position: absolute;
+				inset: 0;
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				opacity: 0;
+				filter: saturate(0.75) brightness(0.55) contrast(1.05);
+				transition: opacity 1.1s ease;
+				transform: scale(1.08);
+			}
+			.hero-image.active {
+				opacity: 1;
+				animation: kenburns 16s ease-in-out infinite alternate;
+			}
+			@keyframes kenburns {
+				from {
+					transform: scale(1.08) translate3d(0, 0, 0);
+				}
+				to {
+					transform: scale(1.16) translate3d(-1%, -1%, 0);
+				}
+			}
+			@media (prefers-reduced-motion: reduce) {
+				.hero-image.active {
+					animation: none;
+				}
+			}
+
+			.collections {
+				position: fixed;
+				z-index: 5;
+				top: 96px;
+				right: 40px;
+				margin: 0;
+				padding: 0;
+				list-style: none;
+				text-align: right;
+				max-height: calc(100vh - 240px);
+				overflow-y: auto;
+				scrollbar-width: none;
+			}
+			.collections::-webkit-scrollbar {
+				display: none;
+			}
+			.collections button {
+				appearance: none;
+				background: none;
+				border: none;
+				font-family: inherit;
+				font-size: 22px;
+				line-height: 1.7;
+				color: #565b66;
+				cursor: pointer;
+				display: flex;
+				align-items: baseline;
+				justify-content: flex-end;
+				gap: 10px;
+				padding: 2px 0;
+				transition: color 250ms ease;
+			}
+			.collection-index {
+				font-size: 11px;
+				color: #454a54;
+			}
+			.collections button:hover,
+			.collections button:focus-visible {
+				color: #d7d7d7;
+			}
+			.collections button.active {
+				color: #ffffff;
+			}
+			.collections button.active .collection-index {
+				color: #8a8f9a;
+			}
+
+			.cta-wrap {
+				position: fixed;
+				z-index: 5;
+				left: 50%;
+				bottom: 52px;
+				transform: translateX(-50%);
+			}
+			.cta {
+				display: inline-flex;
+				align-items: center;
+				gap: 10px;
+				padding: 12px 20px;
+				border: 1px dashed #4a4f59;
+				color: #d7d7d7;
+				text-decoration: none;
+				font-size: 11px;
+				letter-spacing: 0.15em;
+				text-transform: uppercase;
+				background: rgba(5, 7, 10, 0.4);
+				backdrop-filter: blur(4px);
+				transition:
+					border-color 250ms ease,
+					color 250ms ease;
+			}
+			.cta:hover {
+				border-color: #d7d7d7;
+				color: #fff;
+			}
+			.cta-arrow {
+				transition: transform 250ms ease;
+			}
+			.cta:hover .cta-arrow {
+				transform: translateX(3px);
+			}
+
+			@media (max-width: 860px) {
+				body {
+					overflow-y: auto;
+					height: auto;
+					min-height: 100vh;
+				}
+				.hero {
+					position: relative;
+					height: 56vh;
+				}
+				.hero-stack {
+					position: absolute;
+				}
+				.meta-nav {
+					position: static;
+					transform: none;
+					flex-direction: row;
+					gap: 20px;
+					padding: 16px 20px 0;
+				}
+				.meta-top-left,
+				.meta-top-right {
+					position: static;
+					top: auto;
+					left: auto;
+					right: auto;
+					width: 100%;
+					box-sizing: border-box;
+					padding: 16px 20px 0;
+				}
+				.meta-top-right {
+					justify-content: space-between;
+					gap: 16px;
+				}
+				.collections {
+					position: static;
+					max-height: none;
+					text-align: left;
+					padding: 24px;
+				}
+				.collections button {
+					justify-content: flex-start;
+					font-size: 18px;
+				}
+				.cta-wrap {
+					position: static;
+					transform: none;
+					display: flex;
+					justify-content: center;
+					padding-bottom: 24px;
+				}
+				.meta-bottom-left {
+					display: none;
+				}
+				.meta-bottom-right {
+					position: static;
+					flex-direction: column;
+					gap: 8px;
+					padding: 0 24px 24px;
+				}
+			}
+		</style>
+
+		<script define:vars={{ galleries: galleries.map((g) => ({ slug: g.slug, title: g.title })) }}>
+			const byTitle = Object.fromEntries(galleries.map((g) => [g.slug, g.title]));
+
+			function setActive(slug) {
+				document.querySelectorAll('.hero-image').forEach((img) => {
+					img.classList.toggle('active', img.dataset.slug === slug);
+				});
+				document.querySelectorAll('.collections button').forEach((btn) => {
+					btn.classList.toggle('active', btn.dataset.slug === slug);
+				});
+				const btn = document.getElementById('viewGalleryBtn');
+				const label = document.getElementById('viewGalleryLabel');
+				if (btn) btn.href = `/gallery/${slug}/`;
+				if (label) label.textContent = `View ${byTitle[slug] ?? slug}`;
+			}
+
+			document.querySelectorAll('.collections button').forEach((btn) => {
+				const slug = btn.dataset.slug;
+				btn.addEventListener('mouseenter', () => setActive(slug));
+				btn.addEventListener('focus', () => setActive(slug));
+				btn.addEventListener('click', () => setActive(slug));
+			});
+
+			// Subtle cursor parallax on the hero image stack.
+			const hero = document.getElementById('hero');
+			const stack = document.querySelector('.hero-stack');
+			if (hero && stack && matchMedia('(hover: hover) and (min-width: 861px)').matches) {
+				let raf = null;
+				hero.addEventListener('mousemove', (e) => {
+					const x = (e.clientX / window.innerWidth - 0.5) * 24;
+					const y = (e.clientY / window.innerHeight - 0.5) * 24;
+					if (raf) cancelAnimationFrame(raf);
+					raf = requestAnimationFrame(() => {
+						stack.style.transform = `translate3d(${-x}px, ${-y}px, 0)`;
+					});
+				});
+				hero.addEventListener('mouseleave', () => {
+					stack.style.transform = 'translate3d(0, 0, 0)';
+				});
+			}
+
+			// Decorative preloader counter.
+			const countEl = document.getElementById('preloaderCount');
+			if (countEl) {
+				let n = 0;
+				const id = setInterval(() => {
+					n = Math.min(100, n + Math.round(8 + Math.random() * 20));
+					countEl.textContent = `${n}%`;
+					if (n >= 100) clearInterval(id);
+				}, 70);
+			}
+		</script>
 	</body>
 </html>

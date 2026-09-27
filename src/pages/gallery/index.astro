@@ -1,0 +1,125 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import { galleries } from '../../data/galleries';
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title="Index — Stefan Szakal" description="All photo galleries." />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap"
+			rel="stylesheet"
+		/>
+	</head>
+	<body>
+		<header class="bar">
+			<a class="back" href="/">&larr; Home</a>
+			<h1>Index</h1>
+			<a class="back" href="/about/">About</a>
+		</header>
+
+		<main class="grid">
+			{
+				galleries.map((g) => (
+					<a class="tile" href={`/gallery/${g.slug}/`}>
+						<span class="tile-index">{g.index}</span>
+						<img src={g.cover} alt={g.title} loading="lazy" />
+						<span class="tile-title">{g.title}</span>
+					</a>
+				))
+			}
+		</main>
+
+		<style>
+			:global(html, body) {
+				background: #05070a;
+			}
+			body {
+				margin: 0;
+				color: #bcbcbc;
+				font-family: 'JetBrains Mono', 'JB Mono', Menlo, Monaco, 'Courier New', monospace;
+				min-height: 100vh;
+			}
+			.bar {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 32px 40px;
+				font-size: 11px;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+			}
+			.bar h1 {
+				font-size: 11px;
+				font-weight: 500;
+				margin: 0;
+				color: #e6e6e6;
+			}
+			.back {
+				color: #8a8f9a;
+				text-decoration: none;
+			}
+			.back:hover {
+				color: #fff;
+			}
+			.grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+				gap: 2px;
+				width: auto;
+				max-width: none;
+				margin: 0;
+				padding: 2px 40px 60px;
+			}
+			.tile {
+				position: relative;
+				aspect-ratio: 4 / 5;
+				overflow: hidden;
+				text-decoration: none;
+				display: block;
+			}
+			.tile img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				filter: saturate(0.7) brightness(0.55);
+				transition:
+					transform 600ms ease,
+					filter 600ms ease;
+			}
+			.tile:hover img {
+				transform: scale(1.05);
+				filter: saturate(0.9) brightness(0.65);
+			}
+			.tile-index {
+				position: absolute;
+				top: 16px;
+				left: 16px;
+				font-size: 11px;
+				color: #9aa0aa;
+				z-index: 1;
+			}
+			.tile-title {
+				position: absolute;
+				bottom: 16px;
+				left: 16px;
+				font-size: 15px;
+				color: #fff;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+				z-index: 1;
+			}
+			@media (max-width: 640px) {
+				.bar {
+					padding: 20px;
+				}
+				.grid {
+					padding: 2px 2px 40px;
+				}
+			}
+		</style>
+	</body>
+</html>

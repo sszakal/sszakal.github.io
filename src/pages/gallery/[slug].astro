@@ -1,0 +1,161 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import { galleries, getGallery } from '../../data/galleries';
+
+export function getStaticPaths() {
+	return galleries.map((g) => ({ params: { slug: g.slug } }));
+}
+
+const { slug } = Astro.params;
+const gallery = getGallery(slug);
+if (!gallery) return Astro.redirect('/gallery/');
+
+const idx = galleries.findIndex((g) => g.slug === slug);
+const prev = galleries[(idx - 1 + galleries.length) % galleries.length];
+const next = galleries[(idx + 1) % galleries.length];
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`${gallery.title} — Stefan Szakal`} description={gallery.description} />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap"
+			rel="stylesheet"
+		/>
+	</head>
+	<body>
+		<header class="bar">
+			<a class="back" href="/gallery/">&larr; Index</a>
+			<div class="title-block">
+				<span class="tag">{gallery.index}</span>
+				<h1>{gallery.title}</h1>
+			</div>
+			<a class="back" href="/">Home</a>
+		</header>
+
+		<p class="description">{gallery.description}</p>
+
+		<main class="grid">
+			{
+				gallery.photos.map((p) => (
+					<figure class="frame">
+						<img src={p.src} alt={p.alt} loading="lazy" />
+					</figure>
+				))
+			}
+		</main>
+
+		<footer class="pager">
+			<a href={`/gallery/${prev.slug}/`}>&larr; {prev.title}</a>
+			<a href={`/gallery/${next.slug}/`}>{next.title} &rarr;</a>
+		</footer>
+
+		<style>
+			:global(html, body) {
+				background: #05070a;
+			}
+			body {
+				margin: 0;
+				color: #bcbcbc;
+				font-family: 'JetBrains Mono', 'JB Mono', Menlo, Monaco, 'Courier New', monospace;
+				min-height: 100vh;
+			}
+			.bar {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 32px 40px 12px;
+				font-size: 11px;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+			}
+			.back {
+				color: #8a8f9a;
+				text-decoration: none;
+			}
+			.back:hover {
+				color: #fff;
+			}
+			.title-block {
+				display: flex;
+				align-items: baseline;
+				gap: 12px;
+			}
+			.tag {
+				color: #565b66;
+				font-size: 11px;
+			}
+			.title-block h1 {
+				margin: 0;
+				font-size: 13px;
+				font-weight: 500;
+				color: #e6e6e6;
+				letter-spacing: 0.12em;
+			}
+			.description {
+				margin: 0;
+				padding: 0 40px 32px;
+				font-size: 13px;
+				color: #7a7f89;
+				max-width: 42em;
+			}
+			.grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+				gap: 2px;
+				width: auto;
+				max-width: none;
+				margin: 0;
+				padding: 0 40px;
+			}
+			.frame {
+				margin: 0;
+				overflow: hidden;
+			}
+			.frame img {
+				display: block;
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				filter: saturate(0.8) brightness(0.7);
+				transition: transform 600ms ease;
+			}
+			.frame:hover img {
+				transform: scale(1.03);
+			}
+			.pager {
+				display: flex;
+				justify-content: space-between;
+				padding: 48px 40px 60px;
+				font-size: 11px;
+				letter-spacing: 0.1em;
+				text-transform: uppercase;
+			}
+			.pager a {
+				color: #8a8f9a;
+				text-decoration: none;
+			}
+			.pager a:hover {
+				color: #fff;
+			}
+			@media (max-width: 640px) {
+				.bar {
+					flex-wrap: wrap;
+					gap: 12px;
+					padding: 20px;
+				}
+				.description,
+				.grid {
+					padding-left: 20px;
+					padding-right: 20px;
+				}
+				.pager {
+					padding: 32px 20px 40px;
+				}
+			}
+		</style>
+	</body>
+</html>
