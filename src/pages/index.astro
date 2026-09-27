@@ -34,12 +34,6 @@ const first = galleries[0];
 			<span class="status">AVAILABLE FOR BOOKINGS</span>
 		</div>
 
-		<nav class="meta meta-nav" aria-label="Primary">
-			<a href="#collections">Galleries</a>
-			<a href="/about/">About</a>
-			<a href="/blog/">Blog</a>
-		</nav>
-
 		<main class="hero" id="hero">
 			<div class="hero-stack">
 				{
@@ -172,24 +166,6 @@ const first = galleries[0];
 				display: flex;
 				gap: 32px;
 				color: #8a8f9a;
-			}
-
-			.meta-nav {
-				top: 50%;
-				left: 40px;
-				transform: translateY(-50%);
-				display: flex;
-				flex-direction: column;
-				gap: 10px;
-				font-size: 13px;
-				text-transform: none;
-				letter-spacing: 0.02em;
-			}
-			.meta-nav a:first-child {
-				color: #fff;
-			}
-			.meta-nav a:not(:first-child) {
-				color: #7a7f89;
 			}
 
 			.meta-bottom-left {
@@ -358,13 +334,6 @@ const first = galleries[0];
 				.hero-stack {
 					position: absolute;
 				}
-				.meta-nav {
-					position: static;
-					transform: none;
-					flex-direction: row;
-					gap: 20px;
-					padding: 16px 20px 0;
-				}
 				.meta-top-left,
 				.meta-top-right {
 					position: static;
@@ -378,6 +347,7 @@ const first = galleries[0];
 				.meta-top-right {
 					justify-content: space-between;
 					gap: 16px;
+					padding-bottom: 16px;
 				}
 				.collections {
 					position: static;

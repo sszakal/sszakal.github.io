@@ -18,7 +18,6 @@ import { galleries } from '../../data/galleries';
 		<header class="bar">
 			<a class="back" href="/">&larr; Home</a>
 			<h1>Index</h1>
-			<a class="back" href="/about/">About</a>
 		</header>
 
 		<main class="grid">
@@ -44,15 +43,19 @@ import { galleries } from '../../data/galleries';
 				min-height: 100vh;
 			}
 			.bar {
+				position: relative;
 				display: flex;
 				align-items: center;
-				justify-content: space-between;
 				padding: 32px 40px;
 				font-size: 11px;
 				letter-spacing: 0.12em;
 				text-transform: uppercase;
 			}
 			.bar h1 {
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
 				font-size: 11px;
 				font-weight: 500;
 				margin: 0;
