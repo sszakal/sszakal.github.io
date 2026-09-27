@@ -13,6 +13,7 @@ if (!gallery) return Astro.redirect('/gallery/');
 const idx = galleries.findIndex((g) => g.slug === slug);
 const prev = galleries[(idx - 1 + galleries.length) % galleries.length];
 const next = galleries[(idx + 1) % galleries.length];
+const photosJson = JSON.stringify(gallery.photos.map((p) => ({ src: p.src, alt: p.alt })));
 ---
 
 <!doctype html>
@@ -27,6 +28,8 @@ const next = galleries[(idx + 1) % galleries.length];
 		/>
 	</head>
 	<body>
+		<div class="space-canvas" id="spaceCanvas"></div>
+
 		<header class="bar">
 			<a class="back" href="/gallery/">&larr; Index</a>
 			<div class="title-block">
@@ -37,31 +40,58 @@ const next = galleries[(idx + 1) % galleries.length];
 		</header>
 
 		<p class="description">{gallery.description}</p>
-
-		<main class="grid">
-			{
-				gallery.photos.map((p) => (
-					<figure class="frame" data-reveal={p.src} data-alt={p.alt} />
-				))
-			}
-		</main>
+		<p class="hint">Drag to look around &middot; scroll to zoom &middot; click a photo</p>
 
 		<footer class="pager">
 			<a href={`/gallery/${prev.slug}/`}>&larr; {prev.title}</a>
 			<a href={`/gallery/${next.slug}/`}>{next.title} &rarr;</a>
 		</footer>
 
+		<div class="lightbox" id="lightbox" hidden>
+			<button class="lightbox-close" id="lightboxClose" aria-label="Close">&times;</button>
+			<img id="lightboxImg" alt="" />
+			<p id="lightboxCaption"></p>
+		</div>
+
+		<script type="application/json" id="photos-data" set:html={photosJson} />
+
 		<style>
 			:global(html, body) {
 				background: #05070a;
+				height: 100%;
 			}
 			body {
 				margin: 0;
+				overflow: hidden;
+				height: 100vh;
 				color: #bcbcbc;
 				font-family: 'JetBrains Mono', 'JB Mono', Menlo, Monaco, 'Courier New', monospace;
-				min-height: 100vh;
+				position: relative;
+			}
+			.space-canvas {
+				position: absolute;
+				inset: 0;
+				z-index: 0;
+			}
+			.space-canvas canvas {
+				display: block;
+			}
+			.bar,
+			.description,
+			.hint,
+			.pager {
+				position: fixed;
+				z-index: 5;
+				pointer-events: none;
+			}
+			.bar a,
+			.pager a {
+				pointer-events: auto;
 			}
 			.bar {
+				top: 0;
+				left: 0;
+				right: 0;
 				display: flex;
 				align-items: center;
 				justify-content: space-between;
@@ -94,43 +124,28 @@ const next = galleries[(idx + 1) % galleries.length];
 				letter-spacing: 0.12em;
 			}
 			.description {
+				top: 72px;
+				left: 40px;
 				margin: 0;
-				padding: 0 40px 32px;
 				font-size: 13px;
 				color: #7a7f89;
-				max-width: 42em;
+				max-width: 32em;
 			}
-			.grid {
-				display: grid;
-				grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-				gap: 2px;
-				width: auto;
-				max-width: none;
+			.hint {
+				bottom: 44px;
+				left: 40px;
 				margin: 0;
-				padding: 0 40px;
-			}
-			.frame {
-				position: relative;
-				margin: 0;
-				aspect-ratio: 4 / 5;
-				overflow: hidden;
-				background: #0a0d12;
-			}
-			.frame img {
-				display: block;
-				width: 100%;
-				height: 100%;
-				object-fit: cover;
-				filter: saturate(0.8) brightness(0.7);
-				transition: transform 600ms ease;
-			}
-			.frame:hover img {
-				transform: scale(1.03);
+				font-size: 11px;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				color: #565b66;
 			}
 			.pager {
+				bottom: 40px;
+				left: 40px;
+				right: 40px;
 				display: flex;
 				justify-content: space-between;
-				padding: 48px 40px 60px;
 				font-size: 11px;
 				letter-spacing: 0.1em;
 				text-transform: uppercase;
@@ -142,26 +157,110 @@ const next = galleries[(idx + 1) % galleries.length];
 			.pager a:hover {
 				color: #fff;
 			}
+
+			.lightbox {
+				position: fixed;
+				inset: 0;
+				z-index: 20;
+				background: rgba(3, 4, 6, 0.94);
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				gap: 16px;
+				padding: 40px;
+				box-sizing: border-box;
+			}
+			.lightbox[hidden] {
+				display: none;
+			}
+			.lightbox img {
+				max-width: min(88vw, 900px);
+				max-height: 78vh;
+				object-fit: contain;
+				box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+			}
+			.lightbox-close {
+				position: absolute;
+				top: 28px;
+				right: 36px;
+				background: none;
+				border: none;
+				color: #bcbcbc;
+				font-size: 28px;
+				line-height: 1;
+				cursor: pointer;
+				font-family: inherit;
+			}
+			.lightbox-close:hover {
+				color: #fff;
+			}
+			#lightboxCaption {
+				color: #7a7f89;
+				font-size: 12px;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+			}
+
 			@media (max-width: 640px) {
 				.bar {
 					flex-wrap: wrap;
 					gap: 12px;
 					padding: 20px;
 				}
-				.description,
-				.grid {
-					padding-left: 20px;
-					padding-right: 20px;
+				.description {
+					top: auto;
+					bottom: 96px;
+					left: 20px;
+					right: 20px;
+					max-width: none;
+				}
+				.hint {
+					display: none;
 				}
 				.pager {
-					padding: 32px 20px 40px;
+					left: 20px;
+					right: 20px;
+					bottom: 20px;
 				}
 			}
 		</style>
 
 		<script>
-			import { setupTileReveal } from '../../scripts/tile-reveal';
-			setupTileReveal();
+			import { GallerySpace, type SpacePhoto } from '../../scripts/gallery-space';
+
+			const dataEl = document.getElementById('photos-data');
+			const photos: SpacePhoto[] = dataEl ? JSON.parse(dataEl.textContent || '[]') : [];
+			const container = document.getElementById('spaceCanvas');
+
+			const lightbox = document.getElementById('lightbox') as HTMLDivElement;
+			const lightboxImg = document.getElementById('lightboxImg') as HTMLImageElement;
+			const lightboxCaption = document.getElementById('lightboxCaption') as HTMLParagraphElement;
+			const lightboxClose = document.getElementById('lightboxClose');
+
+			function openLightbox(index: number) {
+				const p = photos[index];
+				if (!p) return;
+				lightboxImg.src = p.src;
+				lightboxImg.alt = p.alt;
+				lightboxCaption.textContent = p.alt;
+				lightbox.hidden = false;
+			}
+			function closeLightbox() {
+				lightbox.hidden = true;
+			}
+			lightboxClose?.addEventListener('click', closeLightbox);
+			lightbox?.addEventListener('click', (e) => {
+				if (e.target === lightbox) closeLightbox();
+			});
+			document.addEventListener('keydown', (e) => {
+				if (e.key === 'Escape') closeLightbox();
+			});
+
+			if (container && photos.length > 0) {
+				const space = new GallerySpace(container, photos, openLightbox);
+				space.start();
+			}
 		</script>
 	</body>
 </html>
