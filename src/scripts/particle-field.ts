@@ -60,7 +60,6 @@ uniform float uTime;
 uniform float uPointScale;
 uniform float uPxScale;
 uniform float uSpacing;
-uniform vec2 uPointer;
 attribute vec3 aStart;
 attribute vec3 aTarget;
 attribute vec3 aBurst;
@@ -81,9 +80,6 @@ void main() {
   );
 
   vec3 pos = base + aBurst * uDisperse * uBurstAmt + n * uSpacing * (0.15 + uIdleAmt * 0.5);
-
-  pos.x += uPointer.x * (0.5 + pos.z * 0.6) * 0.5;
-  pos.y += uPointer.y * (0.5 + pos.z * 0.6) * 0.5;
 
   vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
   gl_Position = projectionMatrix * mvPosition;
@@ -150,6 +146,10 @@ function sampleImage(img: HTMLImageElement, count: number, planeW: number, plane
 	const colors = new Float32Array(total * 3);
 	const sizes = new Float32Array(total);
 	const spacing = planeW / cols;
+	// Depth relief is a fraction of the viewport, not of particle spacing, so
+	// it reads as real volumetric depth once the field rotates, rather than a
+	// flat image with a faint pixel-scale jitter.
+	const depthRange = Math.min(planeW, planeH) * 0.32;
 
 	for (let row = 0; row < rows; row++) {
 		for (let col = 0; col < cols; col++) {
@@ -165,7 +165,7 @@ function sampleImage(img: HTMLImageElement, count: number, planeW: number, plane
 
 			positions[i * 3] = x * planeW;
 			positions[i * 3 + 1] = y * planeH;
-			positions[i * 3 + 2] = (luminance - 0.5) * spacing * 6 + (Math.random() - 0.5) * spacing * 0.6;
+			positions[i * 3 + 2] = (luminance - 0.5) * depthRange + (Math.random() - 0.5) * spacing * 0.5;
 
 			colors[i * 3] = r;
 			colors[i * 3 + 1] = g;
@@ -201,6 +201,7 @@ export class ParticleField {
 	private scene = new THREE.Scene();
 	private camera: THREE.PerspectiveCamera;
 	private geometry: THREE.BufferGeometry;
+	private rig = new THREE.Group();
 	private core: THREE.Points;
 	private glow: THREE.Points;
 	private count: number;
@@ -255,8 +256,9 @@ export class ParticleField {
 
 		this.core = new THREE.Points(this.geometry, this.buildMaterial(false, opts.pointScale ?? 1));
 		this.glow = new THREE.Points(this.geometry, this.buildMaterial(true, (opts.pointScale ?? 1) * 2.6));
-		this.scene.add(this.glow);
-		this.scene.add(this.core);
+		this.rig.add(this.glow);
+		this.rig.add(this.core);
+		this.scene.add(this.rig);
 
 		this.uniformsShared.uDisperse.value = opts.disperse ?? 3.2;
 
@@ -276,7 +278,6 @@ export class ParticleField {
 		uPointScale: { value: 1 },
 		uPxScale: { value: 1 },
 		uSpacing: { value: 0.1 },
-		uPointer: { value: new THREE.Vector2(0, 0) },
 	};
 
 	private buildMaterial(glow: boolean, pointScale: number) {
@@ -287,7 +288,6 @@ export class ParticleField {
 				uIdleAmt: this.uniformsShared.uIdleAmt,
 				uDisperse: this.uniformsShared.uDisperse,
 				uTime: this.uniformsShared.uTime,
-				uPointer: this.uniformsShared.uPointer,
 				uPxScale: this.uniformsShared.uPxScale,
 				uSpacing: this.uniformsShared.uSpacing,
 				uPointScale: { value: pointScale },
@@ -445,8 +445,15 @@ export class ParticleField {
 		const dt = this.clock.getDelta();
 		this.uniformsShared.uTime.value += dt;
 
-		this.pointerCurrent.lerp(this.pointerTarget, 0.06);
-		this.uniformsShared.uPointer.value.copy(this.pointerCurrent);
+		this.pointerCurrent.lerp(this.pointerTarget, 0.05);
+
+		if (this.mode === 'loop') {
+			const time = this.uniformsShared.uTime.value;
+			const autoY = Math.sin(time * 0.11) * 0.22;
+			const autoX = Math.cos(time * 0.08) * 0.07;
+			this.rig.rotation.y = autoY + this.pointerCurrent.x * 0.3;
+			this.rig.rotation.x = autoX + this.pointerCurrent.y * -0.18;
+		}
 
 		if (this.tweening) {
 			const t = Math.min(1, (performance.now() - this.tweenStart) / this.tweenDuration);
