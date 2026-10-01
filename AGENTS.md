@@ -1,22 +1,50 @@
-## Development
+# Astro Multiverse Agent Guidelines
 
-When starting the dev server, use background mode:
+This document provides instructions and context for AI agents working on this project.
 
-```
-astro dev --background
-```
+## Project Overview
 
-Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
+Astro Multiverse is a modern re-implementation by AREA44, inspired by the classic Multiverse template from HTML5 UP using modern web technologies. It eliminates legacy dependencies like jQuery and Poptrox in favor of a clean, React-based implementation.
 
-## Documentation
+## Tech Stack
 
-Full documentation: https://docs.astro.build
+- **Astro 6**: Project structure, SSG, and routing.
+- **React 19**: Gallery components and Lightbox implementation.
+- **Tailwind CSS 4**: Utility-first styling integrated via Vite plugin.
+- **Oxlint & Oxfmt**: Fast linting and formatting.
 
-Consult these guides before working on related tasks:
+## Key Implementation Details
 
-- [Adding pages, dynamic routes, or middleware](https://docs.astro.build/en/guides/routing/)
-- [Working with Astro components](https://docs.astro.build/en/basics/astro-components/)
-- [Using React, Vue, Svelte, or other framework components](https://docs.astro.build/en/guides/framework-components/)
-- [Adding or managing content](https://docs.astro.build/en/guides/content-collections/)
-- [Adding styles or using Tailwind](https://docs.astro.build/en/guides/styling/)
-- [Supporting multiple languages](https://docs.astro.build/en/guides/internationalization/)
+### Lightbox Component
+
+- **Location**: `src/components/Gallery.tsx`
+- **Portals**: Uses `createPortal` to render the lightbox directly into `document.body`. This avoids stacking context issues and the blur filter applied to `#wrapper`.
+- **Styling**: Replicates legacy CSS classes (`.poptrox-overlay`, `.poptrox-popup`, `.pic`, `.closer`, `.nav-previous`, `.nav-next`, `.loader`) to maintain the original look and feel while using modern CSS.
+- **Responsiveness**: The lightbox is responsive. On screens <= 736px, navigation controls are optimized and image sizing changes to maximize screen usage.
+
+### Styles
+
+- **Global Styles**: Located in `src/styles/global.css`.
+- **Tailwind v4**: Uses the new `@import "tailwindcss";` syntax. Custom theme variables are defined in the `@theme` block.
+- **Is-Preload**: The `is-preload` class on `body` is used for initial loading animations.
+
+### Images
+
+- Images are stored in `src/assets`.
+- Thumbnails and full-size images are optimized using Astro's image processing capabilities.
+
+## Development Workflow
+
+### Scripts
+
+- `npm run dev`: Start the development server on port 4321.
+- `npm run build`: Build the project for production.
+- `npm run lint`: Run Oxlint to find and fix issues.
+- `npm run format`: Run Oxfmt to format code.
+- `npm run check`: Run both linting and formatting checks.
+
+### Guidelines
+
+- **No Legacy JS**: Do not re-introduce jQuery or Poptrox. Use React for interactive elements.
+- **Optimization**: Always use Astro's `Image` component or `getImage` service for assets.
+- **Cleanliness**: Do not add log files or build artifacts to the repository. Ensure they are covered by `.gitignore`.
