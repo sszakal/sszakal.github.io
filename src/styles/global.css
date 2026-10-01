@@ -203,7 +203,7 @@
   }
 
   .nav-tile-bg {
-    @apply pointer-events-none absolute inset-0 block scale-125 bg-cover bg-center bg-no-repeat brightness-[0.35] blur-md transition-transform duration-500 ease-in-out;
+    @apply pointer-events-none absolute inset-0 block scale-100 bg-cover bg-center bg-no-repeat brightness-[0.4] transition-transform duration-500 ease-in-out;
   }
 
   .nav-tile-reveal {
@@ -211,15 +211,15 @@
     mask-image: url("/images/chevron-mask.svg");
     mask-repeat: no-repeat;
     mask-position: center;
-    mask-size: 42% auto;
+    mask-size: 70% auto;
     -webkit-mask-image: url("/images/chevron-mask.svg");
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-position: center;
-    -webkit-mask-size: 42% auto;
+    -webkit-mask-size: 70% auto;
   }
 
   .nav-tile:hover .nav-tile-bg {
-    @apply scale-[1.4];
+    @apply scale-110;
   }
 
   .nav-tile-prev {
