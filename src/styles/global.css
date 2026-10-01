@@ -161,6 +161,12 @@
 
   #main {
     @apply flex h-full w-full flex-wrap overflow-x-hidden overflow-y-auto transition-[filter] duration-500 ease-in-out;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
 
     &::after {
       @apply pointer-events-none invisible absolute top-0 left-0 z-[1] block h-full w-full bg-[#242629]/25 opacity-0 transition-[opacity,visibility] duration-500 content-[''];
