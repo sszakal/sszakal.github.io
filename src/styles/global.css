@@ -194,8 +194,25 @@
     }
   }
 
-  #main .thumb-nav::after {
+  #main .thumb-nav::after,
+  #main .thumb-info::after {
     @apply content-none;
+  }
+
+  .info-tile {
+    @apply relative flex h-full w-full flex-col justify-between bg-black p-8;
+  }
+
+  .info-back {
+    @apply pointer-events-auto inline-flex h-10 w-10 items-center justify-center self-start text-3xl text-white/50 no-underline transition-colors duration-300 ease-in-out hover:text-white;
+  }
+
+  .info-title {
+    @apply m-0 text-lg font-normal text-white;
+  }
+
+  .info-description {
+    @apply m-0 mt-2 text-sm text-white/45;
   }
 
   .nav-tile {

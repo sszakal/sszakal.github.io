@@ -9,6 +9,7 @@ export interface AlbumPhoto {
 export interface Album {
   slug: string;
   title: string;
+  description: string;
   cover: AlbumPhoto;
   photos: AlbumPhoto[];
 }
@@ -33,12 +34,18 @@ let cache: Album[] | null = null;
 export async function getAlbums(): Promise<Album[]> {
   if (cache) return cache;
 
-  const files = import.meta.glob<{ default: ImageMetadata }>("/src/assets/*/*");
-  const byAlbum = new Map<string, string[]>();
+  const imageFiles = import.meta.glob<{ default: ImageMetadata }>(
+    "/src/assets/*/*.{jpg,jpeg,png,webp,avif,gif}",
+  );
+  // Optional per-album blurb: drop a description.txt next to the photos.
+  const descriptionFiles = import.meta.glob("/src/assets/*/description.txt", {
+    query: "?raw",
+    import: "default",
+  });
 
-  for (const path of Object.keys(files)) {
-    const parts = path.split("/");
-    const slug = parts.at(-2)!;
+  const byAlbum = new Map<string, string[]>();
+  for (const path of Object.keys(imageFiles)) {
+    const slug = path.split("/").at(-2)!;
     if (!byAlbum.has(slug)) byAlbum.set(slug, []);
     byAlbum.get(slug)!.push(path);
   }
@@ -48,13 +55,20 @@ export async function getAlbums(): Promise<Album[]> {
     paths.sort();
     const photos = await Promise.all(
       paths.map(async (path) => {
-        const mod = await files[path]();
+        const mod = await imageFiles[path]();
         return optimize(mod.default);
       }),
     );
+
+    const descPath = `/src/assets/${slug}/description.txt`;
+    const description = descriptionFiles[descPath]
+      ? ((await descriptionFiles[descPath]()) as string).trim()
+      : `${photos.length} photo${photos.length === 1 ? "" : "s"}`;
+
     albums.push({
       slug,
       title: titleCase(slug),
+      description,
       cover: photos[0],
       photos,
     });

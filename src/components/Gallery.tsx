@@ -8,6 +8,9 @@ interface ImageData {
 
 interface GalleryProps {
   images: ImageData[];
+  title?: string;
+  description?: string;
+  backHref?: string;
 }
 
 interface LightboxProps {
@@ -120,7 +123,7 @@ const Lightbox: React.FC<LightboxProps> = ({
 
 const PAGE_SIZE = 24;
 
-const Gallery: React.FC<GalleryProps> = ({ images }) => {
+const Gallery: React.FC<GalleryProps> = ({ images, title, description, backHref = "/" }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -197,6 +200,20 @@ const Gallery: React.FC<GalleryProps> = ({ images }) => {
   return (
     <>
       <div id="main" ref={mainRef}>
+        {(title || description) && (
+          <article className="thumb thumb-info">
+            <div className="image info-tile">
+              <a className="info-back" href={backHref} aria-label="Back to albums">
+                &larr;
+              </a>
+              <div className="info-text">
+                {title && <h2 className="info-title">{title}</h2>}
+                {description && <p className="info-description">{description}</p>}
+              </div>
+            </div>
+          </article>
+        )}
+
         {hasPrev && prevPreview && (
           <article className="thumb thumb-nav">
             <button

@@ -12,39 +12,17 @@ const { slug } = Astro.params;
 const album = await getAlbum(slug);
 if (!album) return Astro.redirect("/");
 
-const title = `${album.title} — Stefan Szakal`;
-const description = `${album.title} — photography by Stefan Szakal.`;
+const pageTitle = `${album.title} — Stefan Szakal`;
+const pageDescription = `${album.title} — photography by Stefan Szakal.`;
 ---
 
 <!doctype html>
 <html lang="en">
-  <BaseHead title={title} description={description} author={'Stefan Szakal'} og={'og-image.jpg'} />
+  <BaseHead title={pageTitle} description={pageDescription} author={'Stefan Szakal'} og={'og-image.jpg'} />
 
   <body class="is-preload">
     <div id="wrapper">
-      <a id="back-link" href="/" aria-label="All albums">&larr; Albums</a>
-      <Gallery images={album.photos} client:load />
+      <Gallery images={album.photos} title={album.title} description={album.description} backHref="/" client:load />
     </div>
   </body>
 </html>
-
-<style>
-  #back-link {
-    position: fixed;
-    top: 1.5em;
-    left: 1.5em;
-    z-index: 100;
-    padding: 0.5em 0.9em;
-    font-size: 0.8em;
-    letter-spacing: 0.04em;
-    color: white;
-    text-decoration: none;
-    background: rgba(10, 17, 25, 0.4);
-    border-radius: 0.3em;
-    opacity: 0.55;
-    transition: opacity 0.3s ease;
-  }
-  #back-link:hover {
-    opacity: 1;
-  }
-</style>
