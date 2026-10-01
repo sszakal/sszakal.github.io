@@ -344,4 +344,12 @@
   .thumb-img {
     @apply block h-auto w-full;
   }
+
+  /* Nav tiles have no <img> fallback (they're an icon, not a photo), so the
+     background-image reset above would otherwise leave them blank and, with
+     no content to size them, collapse to zero height. */
+  #main .thumb .image.nav-tile {
+    @apply relative block h-32 w-full;
+    background-image: url("/images/arrow.svg") !important;
+  }
 }

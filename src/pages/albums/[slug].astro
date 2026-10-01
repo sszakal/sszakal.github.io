@@ -1,0 +1,50 @@
+---
+import BaseHead from "@/components/BaseHead.astro";
+import Gallery from "@/components/Gallery.tsx";
+import { getAlbums, getAlbum } from "@/lib/albums";
+
+export async function getStaticPaths() {
+  const albums = await getAlbums();
+  return albums.map((album) => ({ params: { slug: album.slug } }));
+}
+
+const { slug } = Astro.params;
+const album = await getAlbum(slug);
+if (!album) return Astro.redirect("/");
+
+const title = `${album.title} — Stefan Szakal`;
+const description = `${album.title} — photography by Stefan Szakal.`;
+---
+
+<!doctype html>
+<html lang="en">
+  <BaseHead title={title} description={description} author={'Stefan Szakal'} og={'og-image.jpg'} />
+
+  <body class="is-preload">
+    <div id="wrapper">
+      <a id="back-link" href="/" aria-label="All albums">&larr; Albums</a>
+      <Gallery images={album.photos} client:load />
+    </div>
+  </body>
+</html>
+
+<style>
+  #back-link {
+    position: fixed;
+    top: 1.5em;
+    left: 1.5em;
+    z-index: 100;
+    padding: 0.5em 0.9em;
+    font-size: 0.8em;
+    letter-spacing: 0.04em;
+    color: white;
+    text-decoration: none;
+    background: rgba(10, 17, 25, 0.4);
+    border-radius: 0.3em;
+    opacity: 0.55;
+    transition: opacity 0.3s ease;
+  }
+  #back-link:hover {
+    opacity: 1;
+  }
+</style>
