@@ -203,7 +203,7 @@
   }
 
   .nav-tile-bg {
-    @apply pointer-events-none absolute inset-0 block scale-100 bg-cover bg-center bg-no-repeat brightness-[0.4] transition-transform duration-500 ease-in-out;
+    @apply pointer-events-none absolute inset-0 block scale-100 bg-cover bg-center bg-no-repeat brightness-[0.005] transition-[transform,filter] duration-500 ease-in-out;
   }
 
   .nav-tile-reveal {
@@ -219,7 +219,7 @@
   }
 
   .nav-tile:hover .nav-tile-bg {
-    @apply scale-110;
+    @apply scale-110 brightness-[0.4];
   }
 
   .nav-tile-prev {
