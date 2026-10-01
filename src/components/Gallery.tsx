@@ -118,10 +118,25 @@ const Lightbox: React.FC<LightboxProps> = ({
   );
 };
 
+const PAGE_SIZE = 24;
+
 const Gallery: React.FC<GalleryProps> = ({ images }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(0);
+  const mainRef = useRef<HTMLDivElement>(null);
+
+  const totalPages = Math.max(1, Math.ceil(images.length / PAGE_SIZE));
+  const hasPrev = page > 0;
+  const hasNext = page < totalPages - 1;
+  const pageStart = page * PAGE_SIZE;
+  const pageImages = images.slice(pageStart, pageStart + PAGE_SIZE);
+
+  const goToPage = (next: number) => {
+    setPage(Math.max(0, Math.min(totalPages - 1, next)));
+    mainRef.current?.scrollTo({ top: 0 });
+  };
 
   const isMounted = useSyncExternalStore(
     () => () => {},
@@ -179,14 +194,25 @@ const Gallery: React.FC<GalleryProps> = ({ images }) => {
 
   return (
     <>
-      <div id="main">
-        {images.map((img, index) => (
+      <div id="main" ref={mainRef}>
+        {hasPrev && (
+          <article className="thumb thumb-nav">
+            <button
+              type="button"
+              className="image nav-tile nav-tile-prev"
+              onClick={() => goToPage(page - 1)}
+              aria-label="Previous page"
+            />
+          </article>
+        )}
+
+        {pageImages.map((img, localIndex) => (
           <article className="thumb" key={img.src}>
             <button
               type="button"
               className="image cursor-pointer p-0"
               onClick={() => {
-                openLightbox(index);
+                openLightbox(pageStart + localIndex);
               }}
               style={{
                 backgroundImage: `url(${img.thumbnail})`,
@@ -197,6 +223,17 @@ const Gallery: React.FC<GalleryProps> = ({ images }) => {
             </button>
           </article>
         ))}
+
+        {hasNext && (
+          <article className="thumb thumb-nav">
+            <button
+              type="button"
+              className="image nav-tile nav-tile-next"
+              onClick={() => goToPage(page + 1)}
+              aria-label="Next page"
+            />
+          </article>
+        )}
       </div>
 
       {isOpen &&
