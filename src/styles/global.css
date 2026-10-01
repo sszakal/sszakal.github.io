@@ -199,12 +199,27 @@
   }
 
   .nav-tile {
-    @apply cursor-pointer bg-white/5 bg-[length:3.5em] bg-center bg-no-repeat opacity-40 transition-opacity duration-300 ease-in-out;
-    background-image: url("/images/arrow.svg");
+    @apply cursor-pointer overflow-hidden;
+  }
 
-    &:hover {
-      @apply opacity-100;
-    }
+  .nav-tile-bg {
+    @apply pointer-events-none absolute inset-0 block scale-125 bg-cover bg-center bg-no-repeat brightness-[0.35] blur-md transition-transform duration-500 ease-in-out;
+  }
+
+  .nav-tile-reveal {
+    @apply pointer-events-none absolute inset-0 block bg-cover bg-center bg-no-repeat;
+    mask-image: url("/images/chevron-mask.svg");
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: 42% auto;
+    -webkit-mask-image: url("/images/chevron-mask.svg");
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: 42% auto;
+  }
+
+  .nav-tile:hover .nav-tile-bg {
+    @apply scale-[1.4];
   }
 
   .nav-tile-prev {
@@ -345,11 +360,11 @@
     @apply block h-auto w-full;
   }
 
-  /* Nav tiles have no <img> fallback (they're an icon, not a photo), so the
-     background-image reset above would otherwise leave them blank and, with
-     no content to size them, collapse to zero height. */
+  /* Nav tiles have no <img> fallback — their imagery lives on absolutely
+     positioned child layers (.nav-tile-bg / .nav-tile-reveal), which need a
+     sized, positioned ancestor rather than the natural img-driven height the
+     reset above gives ordinary photo tiles. */
   #main .thumb .image.nav-tile {
     @apply relative block h-32 w-full;
-    background-image: url("/images/arrow.svg") !important;
   }
 }

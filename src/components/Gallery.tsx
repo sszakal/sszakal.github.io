@@ -132,6 +132,8 @@ const Gallery: React.FC<GalleryProps> = ({ images }) => {
   const hasNext = page < totalPages - 1;
   const pageStart = page * PAGE_SIZE;
   const pageImages = images.slice(pageStart, pageStart + PAGE_SIZE);
+  const prevPreview = hasPrev ? images[pageStart - 1] : null;
+  const nextPreview = hasNext ? images[pageStart + pageImages.length] : null;
 
   const goToPage = (next: number) => {
     setPage(Math.max(0, Math.min(totalPages - 1, next)));
@@ -195,14 +197,17 @@ const Gallery: React.FC<GalleryProps> = ({ images }) => {
   return (
     <>
       <div id="main" ref={mainRef}>
-        {hasPrev && (
+        {hasPrev && prevPreview && (
           <article className="thumb thumb-nav">
             <button
               type="button"
               className="image nav-tile nav-tile-prev"
               onClick={() => goToPage(page - 1)}
               aria-label="Previous page"
-            />
+            >
+              <span className="nav-tile-bg" style={{ backgroundImage: `url(${prevPreview.thumbnail})` }} />
+              <span className="nav-tile-reveal" style={{ backgroundImage: `url(${prevPreview.thumbnail})` }} />
+            </button>
           </article>
         )}
 
@@ -224,14 +229,17 @@ const Gallery: React.FC<GalleryProps> = ({ images }) => {
           </article>
         ))}
 
-        {hasNext && (
+        {hasNext && nextPreview && (
           <article className="thumb thumb-nav">
             <button
               type="button"
               className="image nav-tile nav-tile-next"
               onClick={() => goToPage(page + 1)}
               aria-label="Next page"
-            />
+            >
+              <span className="nav-tile-bg" style={{ backgroundImage: `url(${nextPreview.thumbnail})` }} />
+              <span className="nav-tile-reveal" style={{ backgroundImage: `url(${nextPreview.thumbnail})` }} />
+            </button>
           </article>
         )}
       </div>
